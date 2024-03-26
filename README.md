@@ -13,6 +13,6 @@ Projekt revas-calculator-web to aplikacja webowa, która umożliwia szybkie wysz
 ## Uruchomienie
 1. Sklonuj repozytorium
 2. Uruchom serwer mysql oraz skonfiguruj połączenie w pliku application.properties
-3. Zaimportuj plik `revas_table.sql` do bazy danych
+3. Zaimportuj plik `revas_table.sql` do bazy danych mysql
 4. Uruchom aplikację za pomocą komendy `mvn spring-boot:run`
 5. Aplikacja dostępna jest pod adresem `http://localhost:8080`

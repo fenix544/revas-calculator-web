@@ -2,15 +2,6 @@ package me.fenix.revascalculatorweb.util;
 
 public class MathUtil {
 
-    public static boolean isNumber(String input) {
-        try {
-            Integer.parseInt(input);
-            return true;
-        } catch (NumberFormatException ignored) {
-            return false;
-        }
-    }
-
     public static int doMath(String operation, int size) {
         String size1 = operation.replace("size", String.valueOf(size));
 

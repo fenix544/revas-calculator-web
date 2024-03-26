@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.4'
+    id "com.github.node-gradle.node" version "7.0.2"
 }
 
 group = 'me.fenix'
@@ -35,6 +36,81 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
+processResources {
+    dependsOn 'buildFrontend'
+}
+
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.register('npmInstallFrontend', NpmTask) {
+    workingDir = file('react-app')
+    args = ['i']
+    doLast {
+        logger.lifecycle 'Successfully installed dependencies for theme'
+    }
+
+    inputs.files('react-app/package.json', 'react-app/package-lock.json')
+    outputs.dir("react-app/node_modules")
+}
+
+tasks.register('buildFrontend', NpmTask) {
+    group = 'node'
+    dependsOn 'npmInstallFrontend'
+    workingDir = file('react-app')
+    args = ['run', 'build']
+    doFirst {
+        project.delete('react-app/dist')
+    }
+    doLast {
+        logger.lifecycle 'Successfully build theme'
+    }
+
+    inputs.files(
+            'react-app/package.json',
+            'react-app/package-lock.json'
+    )
+    inputs.dir("react-app/src")
+    outputs.dir('react-app/dist')
+
+    finalizedBy 'moveFrontendFiles'
+}
+
+tasks.register('moveFrontendFiles') {
+    doLast {
+        def assetsSource = project.file('react-app/dist/assets')
+        def assetsDest = project.layout.getProjectDirectory().dir('src/main/resources/static/assets')
+        def indexSource = project.file('react-app/dist/index.html')
+        def indexDest = project.layout.getProjectDirectory().dir('src/main/resources/templates')
+
+        try {
+            project.delete(assetsDest)
+            project.delete(indexDest.file('index.html'))
+
+            // Move the assets folder
+            project.copy {
+                from assetsSource
+                into assetsDest
+            }
+
+            // Move the index.html file
+            project.copy {
+                from indexSource
+                into indexDest
+            }
+
+            logger.lifecycle "Assets and index.html moved successfully!"
+        } catch (Exception e) {
+            logger.error "Error moving files:", e
+        }
+    }
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs 'react-app/resources'
+        }
+    }
 }
